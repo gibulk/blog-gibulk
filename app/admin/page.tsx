@@ -1,7 +1,8 @@
-import LogoutButton from '@/components/admin/LogoutButton'
+import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { PlusCircle, LogOut, Pencil, Eye } from 'lucide-react'
+import { PlusCircle, Pencil, Eye } from 'lucide-react'
+import LogoutButton from '@/components/admin/LogoutButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,8 +31,8 @@ export default async function AdminDashboardPage() {
 
   const stats = {
     total: articles?.length || 0,
-    published: articles?.filter(a => a.status === 'published').length || 0,
-    draft: articles?.filter(a => a.status === 'draft').length || 0,
+    published: articles?.filter((a: any) => a.status === 'published').length || 0,
+    draft: articles?.filter((a: any) => a.status === 'draft').length || 0,
   }
 
   return (
@@ -62,7 +63,7 @@ export default async function AdminDashboardPage() {
         
         {articles && articles.length > 0 ? (
           <div className="divide-y">
-            {articles.map((article) => (
+            {articles.map((article: any) => (
               <div key={article.id} className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-900">
                 <div className="flex-1">
                   <Link 
@@ -127,15 +128,5 @@ function StatCard({ label, value, color = 'default' }: { label: string; value: n
       <p className={`text-3xl font-bold ${colorClass}`}>{value}</p>
     </div>
   )
-}
-
-function LogoutButton() {
-  return (
-    <form action="/api/auth/logout" method="post">
-      <Button variant="outline" type="submit">
-        <LogOut className="mr-2 h-4 w-4" />
-        Logout
-      </Button>
-    </form>
-  )
-}
+    }
+           
