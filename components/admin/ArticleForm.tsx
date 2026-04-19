@@ -1,15 +1,14 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Article, ArticleFormData, CATEGORIES } from '@/types'
-import { createArticle, updateArticle, uploadImage } from '@/app/admin/actions'
+import { updateArticle } from '@/app/admin/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import RichTextEditor from './RichTextEditor'
-import Image from 'next/image'
 import toast from 'react-hot-toast'
 import slugify from 'slugify'
 
@@ -29,7 +28,6 @@ export default function ArticleForm({ article }: ArticleFormProps) {
     featured_image: article?.featured_image || '',
     status: article?.status || 'draft',
   })
-  const [imageUploading, setImageUploading] = useState(false)
 
   const handleTitleChange = (title: string) => {
     setFormData(prev => ({
@@ -37,27 +35,6 @@ export default function ArticleForm({ article }: ArticleFormProps) {
       title,
       slug: prev.slug || slugify(title, { lower: true, strict: true, locale: 'id' })
     }))
-  }
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Ukuran gambar maksimal 5MB')
-      return
-    }
-
-    setImageUploading(true)
-    try {
-      const imageUrl = await uploadImage(file)
-      setFormData(prev => ({ ...prev, featured_image: imageUrl }))
-      toast.success('Gambar berhasil diupload')
-    } catch (error) {
-      toast.error('Gagal upload gambar')
-    } finally {
-      setImageUploading(false)
-    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,9 +45,8 @@ export default function ArticleForm({ article }: ArticleFormProps) {
       if (article) {
         await updateArticle(article.id, formData)
         toast.success('Artikel berhasil diupdate')
-      } else {
-        await createArticle(formData)
-        toast.success('Artikel berhasil dibuat')
+        router.push('/admin')
+        router.refresh()
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Terjadi kesalahan')
@@ -98,9 +74,6 @@ export default function ArticleForm({ article }: ArticleFormProps) {
           placeholder="slug-artikel-ini"
           required
         />
-        <p className="text-xs text-gray-500 mt-1">
-          URL: https://gibulk.vercel.app/artikel/{formData.slug || 'slug-artikel'}
-        </p>
       </div>
 
       <div>
@@ -108,7 +81,7 @@ export default function ArticleForm({ article }: ArticleFormProps) {
         <Textarea
           value={formData.excerpt}
           onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-          placeholder="Ringkasan singkat artikel (150-160 karakter)"
+          placeholder="Ringkasan singkat artikel"
           rows={3}
         />
       </div>
@@ -130,36 +103,6 @@ export default function ArticleForm({ article }: ArticleFormProps) {
             ))}
           </SelectContent>
         </Select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Gambar Utama</label>
-        <div className="space-y-2">
-          {formData.featured_image && (
-            <div className="relative h-48 w-full max-w-md rounded-lg overflow-hidden">
-              <Image
-                src={formData.featured_image}
-                alt="Featured"
-                fill
-                className="object-cover"
-              />
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, featured_image: '' }))}
-                className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
-              >
-                ✕
-              </button>
-            </div>
-          )}
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            disabled={imageUploading}
-          />
-          {imageUploading && <p className="text-sm text-gray-500">Mengupload...</p>}
-        </div>
       </div>
 
       <div>
@@ -190,7 +133,7 @@ export default function ArticleForm({ article }: ArticleFormProps) {
 
       <div className="flex gap-4">
         <Button type="submit" disabled={loading}>
-          {loading ? 'Menyimpan...' : article ? 'Update Artikel' : 'Simpan Artikel'}
+          {loading ? 'Menyimpan...' : 'Update Artikel'}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Batal
@@ -198,4 +141,5 @@ export default function ArticleForm({ article }: ArticleFormProps) {
       </div>
     </form>
   )
-        }
+                }
+      
