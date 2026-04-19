@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/server'
+import LogoutButton from '@/components/admin/LogoutButton'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { PlusCircle, LogOut, Pencil, Eye } from 'lucide-react'
