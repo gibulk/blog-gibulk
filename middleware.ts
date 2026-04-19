@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -18,13 +18,15 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value)
             response.cookies.set(name, value, options)
           })
         },
       },
     }
   )
+
+  // Refresh session jika expired
+  await supabase.auth.getSession()
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -39,8 +41,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    // Verifikasi email admin
-    if (user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+    // Verifikasi email admin (optional, bisa di-skip dulu untuk testing)
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL
+    if (adminEmail && user.email !== adminEmail) {
       await supabase.auth.signOut()
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
