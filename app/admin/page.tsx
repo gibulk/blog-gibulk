@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { PlusCircle, LogOut } from 'lucide-react'
+import { PlusCircle, LogOut, Pencil, Eye } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,14 +14,16 @@ export default async function AdminDashboardPage() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching articles:', error)
+    console.error('Error:', error)
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-4">Dashboard Admin</h1>
-        <p className="text-red-500">Error: {error.message}</p>
-        <p className="text-gray-600 mt-4">
-          Pastikan tabel &quot;articles&quot; sudah dibuat di Supabase.
-        </p>
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+          <p>Error: {error.message}</p>
+          <p className="mt-2 text-sm">
+            Pastikan tabel "articles" sudah dibuat di Supabase.
+          </p>
+        </div>
       </div>
     )
   }
@@ -43,56 +45,97 @@ export default async function AdminDashboardPage() {
               Artikel Baru
             </Button>
           </Link>
-          <form action="/api/auth/logout" method="post">
-            <Button variant="outline" type="submit">
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </form>
+          <LogoutButton />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white dark:bg-gray-950 border rounded-lg p-6">
-          <h3 className="text-sm font-medium text-gray-500">Total Artikel</h3>
-          <p className="text-3xl font-bold">{stats.total}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-950 border rounded-lg p-6">
-          <h3 className="text-sm font-medium text-gray-500">Dipublikasikan</h3>
-          <p className="text-3xl font-bold text-green-600">{stats.published}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-950 border rounded-lg p-6">
-          <h3 className="text-sm font-medium text-gray-500">Draft</h3>
-          <p className="text-3xl font-bold text-yellow-600">{stats.draft}</p>
-        </div>
+        <StatCard label="Total Artikel" value={stats.total} />
+        <StatCard label="Dipublikasikan" value={stats.published} color="green" />
+        <StatCard label="Draft" value={stats.draft} color="yellow" />
       </div>
 
-      <div className="bg-white dark:bg-gray-950 border rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Artikel Terbaru</h2>
+      <div className="bg-white dark:bg-gray-950 border rounded-lg">
+        <div className="p-6 border-b">
+          <h2 className="text-xl font-semibold">Daftar Artikel</h2>
+        </div>
+        
         {articles && articles.length > 0 ? (
-          <div className="space-y-2">
-            {articles.slice(0, 10).map((article) => (
-              <div key={article.id} className="flex justify-between items-center border-b py-2">
-                <div>
-                  <Link href={`/artikel/${article.slug}`} className="font-medium hover:underline">
+          <div className="divide-y">
+            {articles.map((article) => (
+              <div key={article.id} className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-900">
+                <div className="flex-1">
+                  <Link 
+                    href={`/artikel/${article.slug}`} 
+                    target="_blank"
+                    className="font-medium hover:underline"
+                  >
                     {article.title}
                   </Link>
-                  <span className={`ml-2 text-xs px-2 py-1 rounded ${
-                    article.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {article.status}
-                  </span>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      article.status === 'published' 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {article.status === 'published' ? 'Published' : 'Draft'}
+                    </span>
+                    <span className="text-xs text-gray-500">{article.category}</span>
+                  </div>
                 </div>
-                <Link href={`/admin/artikel/${article.id}/edit`}>
-                  <Button variant="ghost" size="sm">Edit</Button>
-                </Link>
+                <div className="flex gap-2">
+                  <Link href={`/artikel/${article.slug}`} target="_blank">
+                    <Button variant="ghost" size="sm">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href={`/admin/artikel/${article.id}/edit`}>
+                    <Button variant="ghost" size="sm">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-500">Belum ada artikel.</p>
+          <div className="p-12 text-center text-gray-500">
+            <p>Belum ada artikel.</p>
+            <Link href="/admin/artikel/baru">
+              <Button className="mt-4">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Buat Artikel Pertama
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
     </div>
+  )
+}
+
+function StatCard({ label, value, color = 'default' }: { label: string; value: number; color?: string }) {
+  const colorClass = {
+    green: 'text-green-600',
+    yellow: 'text-yellow-600',
+    default: ''
+  }[color]
+
+  return (
+    <div className="bg-white dark:bg-gray-950 border rounded-lg p-6">
+      <h3 className="text-sm font-medium text-gray-500">{label}</h3>
+      <p className={`text-3xl font-bold ${colorClass}`}>{value}</p>
+    </div>
+  )
+}
+
+function LogoutButton() {
+  return (
+    <form action="/api/auth/logout" method="post">
+      <Button variant="outline" type="submit">
+        <LogOut className="mr-2 h-4 w-4" />
+        Logout
+      </Button>
+    </form>
   )
 }
