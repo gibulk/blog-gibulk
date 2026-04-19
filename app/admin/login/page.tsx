@@ -41,7 +41,7 @@ function LoginForm() {
     }
 
     toast.success('Login berhasil!')
-    router.push(redirect)
+    window.location.href = redirect
     router.refresh()
   }
 
