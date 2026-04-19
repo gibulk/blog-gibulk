@@ -22,7 +22,7 @@ export default async function AdminDashboardPage() {
         <div className="bg-red-50 text-red-600 p-4 rounded-lg">
           <p>Error: {error.message}</p>
           <p className="mt-2 text-sm">
-            Pastikan tabel "articles" sudah dibuat di Supabase.
+            Pastikan tabel &quot;articles&quot; sudah dibuat di Supabase.
           </p>
         </div>
       </div>
@@ -128,5 +128,4 @@ function StatCard({ label, value, color = 'default' }: { label: string; value: n
       <p className={`text-3xl font-bold ${colorClass}`}>{value}</p>
     </div>
   )
-    }
-           
+}
