@@ -34,7 +34,7 @@ export default async function SearchPage({ searchParams }: Props) {
         <h1 className="text-3xl font-bold mb-2">Hasil Pencarian</h1>
         {q && (
           <p className="text-gray-600 dark:text-gray-400">
-            Mencari: "{q}" ({articles.length} hasil)
+            Mencari: &apos;{q}&apos; ({articles.length} hasil)
           </p>
         )}
       </header>
@@ -47,7 +47,7 @@ export default async function SearchPage({ searchParams }: Props) {
         </div>
       ) : q ? (
         <p className="text-gray-500 text-center py-12">
-          Tidak ada artikel yang cocok dengan "{q}".
+          Tidak ada artikel yang cocok dengan &apos;{q}&apos;.
         </p>
       ) : (
         <p className="text-gray-500 text-center py-12">
