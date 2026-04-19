@@ -27,7 +27,7 @@ export async function createArticle(formData: ArticleFormData) {
       featured_image: formData.featured_image,
       status: formData.status,
       published_at: formData.status === 'published' ? new Date().toISOString() : null,
-    })
+    } as any)
     .select()
     .single()
 
@@ -67,7 +67,7 @@ export async function updateArticle(id: string, formData: ArticleFormData) {
       published_at: formData.status === 'published' 
         ? new Date().toISOString() 
         : null,
-    })
+    } as any)
     .eq('id', id)
 
   if (error) {
@@ -93,7 +93,8 @@ export async function deleteArticle(id: string) {
 
   // Delete featured image if exists
   if (article?.featured_image) {
-    const fileName = article.featured_image.split('/').pop()
+    const urlParts = article.featured_image.split('/')
+    const fileName = urlParts[urlParts.length - 1]
     if (fileName) {
       await supabase.storage
         .from('article-images')
@@ -137,4 +138,4 @@ export async function uploadImage(file: File): Promise<string> {
     .getPublicUrl(fileName)
 
   return publicUrl
-  }
+}    
