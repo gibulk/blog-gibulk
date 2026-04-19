@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import ArticleContent from '@/components/artikel/ArticleContent'
@@ -6,8 +9,6 @@ import Image from 'next/image'
 import { Metadata } from 'next'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-
-export const revalidate = 3600
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -34,35 +35,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: article.title,
     description: article.excerpt || article.content?.substring(0, 160),
-    openGraph: {
-      title: article.title,
-      description: article.excerpt || article.content?.substring(0, 160),
-      type: 'article',
-      publishedTime: article.published_at,
-      modifiedTime: article.updated_at,
-      authors: ['Gibulk'],
-      tags: [article.category],
-      images: article.featured_image ? [article.featured_image] : [],
-    },
   }
-}
-
-export async function generateStaticParams() {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('articles')
-    .select('slug')
-    .eq('status', 'published')
-  
-  return data?.map((article) => ({ slug: article.slug })) || []
 }
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params
   const supabase = await createClient()
-  
-  // Increment view count (opsional)
-  await supabase.rpc('increment_view', { article_slug: slug })
   
   const { data: article, error } = await supabase
     .from('articles')
@@ -100,8 +78,6 @@ export default async function ArticlePage({ params }: Props) {
           <time dateTime={publishDate.toISOString()}>
             {format(publishDate, 'dd MMMM yyyy', { locale: id })}
           </time>
-          <span className="mx-2">•</span>
-          <span>{article.view_count || 0} views</span>
         </div>
       </header>
 
